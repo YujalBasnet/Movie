@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CinePulse X | Advanced Movie Recommendation App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+      <span class="grain"></span>
+    </div>
+
+    <header class="hero">
+      <p class="eyebrow">Advanced Movie Recommendation App</p>
+      <h1>Explore Massive Movie Catalogs with Smart Filters</h1>
+      <p class="hero-copy">
+        Search, discover, and recommend movies with posters, trailers, multi-genre filtering, and deep
+        TMDb-powered exploration.
+      </p>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel controls-panel" aria-labelledby="controls-title">
+        <div class="panel-head">
+          <h2 id="controls-title">Discovery Controls</h2>
+        </div>
+
+        <form id="discover-form" class="controls-grid" autocomplete="off">
+          <p id="data-status" class="status-note">Loading movie catalog...</p>
+
+          <label class="field">
+            <span>Search Movies</span>
+            <input
+              id="search"
+              name="search"
+              type="text"
+              maxlength="120"
+              placeholder="Type title, plot keyword, cast phrase..."
+            />
+          </label>
+
+          <div class="mode-switch" role="group" aria-label="Feed mode">
+            <button type="button" class="mode-btn active" data-mode="discover">Discover</button>
+            <button type="button" class="mode-btn" data-mode="newest">Newest</button>
+            <button type="button" class="mode-btn" data-mode="classics">Classics</button>
+            <button type="button" class="mode-btn" data-mode="long-watch">Long Watch</button>
+          </div>
+
+          <div class="field">
+            <span>Genres (Multi-Select)</span>
+            <details class="genre-picker" id="genre-picker">
+              <summary>Select one or more genres</summary>
+              <div id="genre-options" class="genre-options"></div>
+            </details>
+            <div id="selected-genres" class="selected-genres"></div>
+          </div>
+
+          <div class="advanced-grid">
+            <label class="field">
+              <span>Genre Match</span>
+              <select id="genre-match" name="genreMatch">
+                <option value="any">Match any selected genre</option>
+                <option value="all">Match all selected genres</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Sort By</span>
+              <select id="sort-by" name="sortBy">
+                <option value="recommendation">Best recommendation</option>
+                <option value="year_desc">Newest first</option>
+                <option value="year_asc">Oldest first</option>
+                <option value="runtime_desc">Longest runtime</option>
+                <option value="runtime_asc">Shortest runtime</option>
+                <option value="title_asc">Title A-Z</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Director Contains</span>
+              <input id="director-filter" name="directorFilter" type="text" maxlength="80" placeholder="e.g. nolan" />
+            </label>
+
+            <label class="field">
+              <span>Actor Contains</span>
+              <input id="actor-filter" name="actorFilter" type="text" maxlength="80" placeholder="e.g. dicaprio" />
+            </label>
+
+            <label class="field">
+              <span>Minimum Match: <strong id="min-match-value">35</strong>%</span>
+              <input id="min-match" name="minMatch" type="range" min="0" max="95" step="1" value="35" />
+            </label>
+
+            <label class="field">
+              <span>Year From</span>
+              <input id="year-from" name="yearFrom" type="number" min="1900" max="2035" placeholder="e.g. 2005" />
+            </label>
+
+            <label class="field">
+              <span>Year To</span>
+              <input id="year-to" name="yearTo" type="number" min="1900" max="2035" placeholder="e.g. 2026" />
+            </label>
+
+            <label class="field">
+              <span>Runtime Min (min)</span>
+              <input id="runtime-min" name="runtimeMin" type="number" min="0" max="300" placeholder="e.g. 90" />
+            </label>
+
+            <label class="field">
+              <span>Runtime Max (min)</span>
+              <input id="runtime-max" name="runtimeMax" type="number" min="0" max="400" placeholder="e.g. 180" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Apply Filters</button>
+            <button class="btn btn-ghost" id="surprise-btn" type="button">Surprise Me</button>
+            <button class="btn btn-ghost" id="reset-btn" type="button">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="results-title">
+        <div class="panel-head results-head">
+          <h2 id="results-title">Movie Explorer</h2>
+          <p id="result-count" class="panel-note"></p>
+        </div>
+
+        <div id="active-query" class="active-query"></div>
+
+        <p id="empty-state" class="empty-state">
+          Loading the movie catalog. Results will appear here shortly.
+        </p>
+        <p id="loading-state" class="loading-state" hidden>Fetching movies...</p>
+
+        <div id="results" class="movie-grid" aria-live="polite"></div>
+        <div id="scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
+      </section>
+
+      <aside class="panel favorites-panel" aria-labelledby="favorites-title">
+        <div class="panel-head">
+          <h2 id="favorites-title">Favorites</h2>
+          <button id="clear-favorites" type="button" class="text-btn">Clear</button>
+        </div>
+        <p id="favorites-empty" class="empty-state">No favorites yet.</p>
+        <div id="favorites-list" class="favorites-list"></div>
+      </aside>
+    </main>
+
+    <template id="movie-card-template">
+      <article class="movie-card">
+        <div class="poster-wrap">
+          <img class="poster" src="" alt="" loading="lazy" />
+          <span class="movie-year"></span>
+          <span class="runtime-pill"></span>
+        </div>
+
+        <div class="movie-body">
+          <h3 class="movie-title"></h3>
+          <p class="movie-meta"></p>
+          <div class="genre-row"></div>
+          <p class="movie-description"></p>
+
+          <div class="user-rating" aria-label="Your rating"></div>
+
+          <div class="card-actions">
+            <span class="score-pill"></span>
+            <div class="card-buttons">
+              <button class="btn btn-trailer" type="button">Trailer</button>
+              <button class="btn btn-similar" type="button">Similar</button>
+              <button class="btn btn-save" type="button"></button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <div id="trailer-modal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="trailer-title">
+        <button id="close-trailer" class="modal-close" type="button" aria-label="Close trailer">x</button>
+        <h3 id="trailer-title">Trailer</h3>
+        <div class="trailer-frame-wrap">
+          <iframe
+            id="trailer-frame"
+            src=""
+            title="Movie trailer player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <p id="trailer-message" class="modal-note"></p>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <p>Powered by open movie data endpoints. Built with HTML, CSS, and JavaScript.</p>
+    </footer>
+  </body>
+</html>
