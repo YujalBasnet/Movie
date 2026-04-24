@@ -1,4 +1,5 @@
 const DATASET_ENDPOINTS = [
+  "data/movies.json",
   "https://cdn.jsdelivr.net/gh/erik-sytnyk/movies-list@master/db.json",
   "https://raw.githubusercontent.com/erik-sytnyk/movies-list/master/db.json"
 ];
