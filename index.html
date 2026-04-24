@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CinePulse X is a cinematic movie discovery app with smart filters, live favorites, ratings, and trailer previews."
+    />
+    <meta name="theme-color" content="#0b1627" />
     <title>CinePulse X | Advanced Movie Recommendation App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,12 +27,45 @@
     </div>
 
     <header class="hero">
-      <p class="eyebrow">Advanced Movie Recommendation App</p>
-      <h1>Explore Massive Movie Catalogs with Smart Filters</h1>
-      <p class="hero-copy">
-        Search, discover, and recommend movies with posters, trailers, multi-genre filtering, and deep
-        TMDb-powered exploration.
-      </p>
+      <div class="hero-copy-shell">
+        <p class="eyebrow">Advanced Movie Recommendation App</p>
+        <h1>Explore massive movie catalogs with smart filters</h1>
+        <p class="hero-copy">
+          Search, discover, and recommend movies with posters, trailers, multi-genre filtering, and a
+          fast multi-source catalog.
+        </p>
+        <div class="hero-badges" aria-label="Highlights">
+          <span class="hero-badge">Multi-source catalog</span>
+          <span class="hero-badge">Infinite scroll</span>
+          <span class="hero-badge">Favorites and ratings</span>
+          <span class="hero-badge">Trailer previews</span>
+        </div>
+      </div>
+
+      <aside class="hero-panel" aria-label="Live summary">
+        <div class="hero-panel-head">
+          <span class="hero-panel-eyebrow">Live cockpit</span>
+          <span class="hero-panel-status">Synced live</span>
+        </div>
+        <p class="hero-panel-title">
+          A movie browser designed for fast discovery, richer context, and a polished production feel.
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong id="hero-catalog-count">0</strong>
+            <span>movies loaded</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="hero-visible-count">0</strong>
+            <span>visible now</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="hero-favorites-count">0</strong>
+            <span>favorites saved</span>
+          </div>
+        </div>
+        <p id="hero-mode-label" class="hero-panel-foot">Current feed: Discovery mode</p>
+      </aside>
     </header>
 
     <main class="app-layout">
@@ -205,7 +243,7 @@
     </div>
 
     <footer class="app-footer">
-      <p>Powered by open movie data endpoints. Built with HTML, CSS, and JavaScript.</p>
+      <p>Built with HTML, CSS, and JavaScript on open movie data endpoints.</p>
     </footer>
   </body>
 </html>

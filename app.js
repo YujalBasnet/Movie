@@ -111,6 +111,10 @@ const scrollSentinel = document.getElementById("scroll-sentinel");
 const favoritesContainer = document.getElementById("favorites-list");
 const favoritesEmpty = document.getElementById("favorites-empty");
 const movieCardTemplate = document.getElementById("movie-card-template");
+const heroCatalogCount = document.getElementById("hero-catalog-count");
+const heroVisibleCount = document.getElementById("hero-visible-count");
+const heroFavoritesCount = document.getElementById("hero-favorites-count");
+const heroModeLabel = document.getElementById("hero-mode-label");
 
 const trailerModal = document.getElementById("trailer-modal");
 const trailerTitle = document.getElementById("trailer-title");
@@ -169,6 +173,7 @@ async function initialize() {
   const loadedMovies = await loadCatalogMovies();
 
   state.allMovies = loadedMovies;
+  updateHeroStats();
 
   const genres = collectGenres(loadedMovies);
   renderGenreOptions(genres);
@@ -319,6 +324,7 @@ function renderSelectedGenres() {
 function switchMode(mode) {
   state.mode = mode;
   updateModeButtons();
+  updateHeroStats();
   runFilterPipeline();
 }
 
@@ -338,6 +344,7 @@ function handleReset() {
   state.selectedGenres.clear();
   state.mode = "discover";
   updateModeButtons();
+  updateHeroStats();
   minMatchValue.textContent = String(Number(minMatchInput.value));
   renderSelectedGenres();
 
@@ -631,6 +638,7 @@ function resetAndRenderPages() {
   appendNextPage();
   updateResultCount();
   updateInfiniteState();
+  updateHeroStats();
 }
 
 function appendNextPage() {
@@ -654,6 +662,7 @@ function appendNextPage() {
   state.currentPage = nextPage;
   updateResultCount();
   updateInfiniteState();
+  updateHeroStats();
 }
 
 function renderResults(movies, append) {
@@ -719,10 +728,12 @@ function showSimilarFeed(anchor) {
   state.filteredMovies = feed;
   state.currentPage = 0;
   state.totalPages = Math.max(1, Math.ceil(feed.length / PAGE_SIZE));
+  state.lastFilters = { mode: "similar" };
 
   resultsContainer.innerHTML = "";
   appendNextPage();
   renderActiveChips(readFilters(), `Similar to ${anchor.title}`);
+  updateHeroStats();
 }
 
 function getSimilarMovies(anchor, limit) {
@@ -807,6 +818,14 @@ function renderActiveChips(filters, label) {
 }
 
 function modeLabel(mode) {
+  if (mode === "surprise") {
+    return "Surprise mode";
+  }
+
+  if (mode === "similar") {
+    return "Similar feed";
+  }
+
   if (mode === "newest") {
     return "Newest releases mode";
   }
@@ -816,11 +835,30 @@ function modeLabel(mode) {
   if (mode === "long-watch") {
     return "Long watch mode";
   }
-  return "Discover mode";
+  return "Discovery mode";
 }
 
 function updateResultCount() {
   resultCount.textContent = `${state.filteredMovies.length} movies | Page ${state.currentPage}/${state.totalPages}`;
+}
+
+function updateHeroStats() {
+  if (heroCatalogCount) {
+    heroCatalogCount.textContent = String(state.allMovies.length);
+  }
+
+  if (heroVisibleCount) {
+    heroVisibleCount.textContent = String(state.filteredMovies.length);
+  }
+
+  if (heroFavoritesCount) {
+    heroFavoritesCount.textContent = String(Object.keys(favorites).length);
+  }
+
+  if (heroModeLabel) {
+    const activeMode = state.lastFilters?.mode || state.mode;
+    heroModeLabel.textContent = `Current feed: ${modeLabel(activeMode)}`;
+  }
 }
 
 function setLoading(loading) {
@@ -890,6 +928,7 @@ function renderFavorites() {
   const list = Object.values(favorites);
   if (list.length === 0) {
     favoritesEmpty.hidden = false;
+    updateHeroStats();
     return;
   }
 
@@ -923,6 +962,8 @@ function renderFavorites() {
       row.appendChild(remove);
       favoritesContainer.appendChild(row);
     });
+
+  updateHeroStats();
 }
 
 function clearFavorites() {
