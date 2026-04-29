@@ -77,6 +77,15 @@
         <form id="discover-form" class="controls-grid" autocomplete="off">
           <p id="data-status" class="status-note">Loading movie catalog...</p>
 
+          <div class="taste-card" aria-live="polite">
+            <div class="taste-row">
+              <span class="taste-label">Personal taste</span>
+              <span id="taste-strength" class="taste-strength">Just starting</span>
+            </div>
+            <p id="taste-summary" class="taste-summary">Rate and favorite movies to personalize your feed.</p>
+            <div id="taste-tags" class="taste-tags"></div>
+          </div>
+
           <label class="field">
             <span>Search Movies</span>
             <input
@@ -89,6 +98,7 @@
           </label>
 
           <div class="mode-switch" role="group" aria-label="Feed mode">
+            <button type="button" class="mode-btn" data-mode="for-you">For You</button>
             <button type="button" class="mode-btn active" data-mode="discover">Discover</button>
             <button type="button" class="mode-btn" data-mode="newest">Newest</button>
             <button type="button" class="mode-btn" data-mode="classics">Classics</button>
@@ -141,6 +151,19 @@
             </label>
 
             <label class="field">
+              <span>Personalization: <strong id="personalize-value">60</strong>%</span>
+              <input
+                id="personalize-strength"
+                name="personalizeStrength"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="60"
+              />
+            </label>
+
+            <label class="field">
               <span>Year From</span>
               <input id="year-from" name="yearFrom" type="number" min="1900" max="2035" placeholder="e.g. 2005" />
             </label>
@@ -158,6 +181,13 @@
             <label class="field">
               <span>Runtime Max (min)</span>
               <input id="runtime-max" name="runtimeMax" type="number" min="0" max="400" placeholder="e.g. 180" />
+            </label>
+
+            <label class="field checkbox-field">
+              <span class="inline-check">
+                <input id="hide-seen" name="hideSeen" type="checkbox" />
+                Hide rated/saved titles
+              </span>
             </label>
           </div>
 
@@ -207,6 +237,7 @@
         <div class="movie-body">
           <h3 class="movie-title"></h3>
           <p class="movie-meta"></p>
+          <p class="recommendation-reason" hidden></p>
           <div class="genre-row"></div>
           <p class="movie-description"></p>
 

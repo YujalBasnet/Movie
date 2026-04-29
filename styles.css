@@ -364,6 +364,61 @@ summary:focus-visible {
   color: var(--muted);
 }
 
+.taste-card {
+  border-radius: 0.8rem;
+  border: 1px solid rgba(173, 221, 255, 0.2);
+  background: rgba(6, 21, 35, 0.78);
+  padding: 0.6rem 0.7rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.taste-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.taste-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent-3);
+  font-weight: 800;
+}
+
+.taste-strength {
+  font-size: 0.74rem;
+  color: #d7f5ff;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid rgba(41, 211, 198, 0.35);
+  background: rgba(41, 211, 198, 0.12);
+}
+
+.taste-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.taste-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.taste-tag {
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.72rem;
+  border: 1px solid rgba(255, 209, 102, 0.4);
+  color: #ffe6ba;
+  background: rgba(255, 158, 74, 0.12);
+}
+
 .status-note.success {
   color: var(--accent-2);
 }
@@ -666,6 +721,19 @@ summary:focus-visible {
   margin: 0.33rem 0 0;
   color: var(--accent-2);
   font-size: 0.82rem;
+}
+
+.recommendation-reason {
+  margin: 0.36rem 0 0;
+  font-size: 0.78rem;
+  color: #d7f5ff;
+  background: rgba(41, 211, 198, 0.12);
+  border: 1px solid rgba(41, 211, 198, 0.28);
+  padding: 0.2rem 0.42rem;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .genre-row {
