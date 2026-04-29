@@ -7,7 +7,15 @@
       name="description"
       content="CinePulse X is a cinematic movie discovery app with smart filters, live favorites, ratings, and trailer previews."
     />
+    <meta name="application-name" content="CinePulse X" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#0b1627" />
+    <meta property="og:title" content="CinePulse X" />
+    <meta
+      property="og:description"
+      content="Explore massive movie catalogs with smart filters, favorites, and personalized recommendations."
+    />
+    <meta property="og:type" content="website" />
     <title>CinePulse X | Advanced Movie Recommendation App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +23,11 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icon-192.svg" />
+    <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
+    <script src="config.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
@@ -274,7 +286,10 @@
     </div>
 
     <footer class="app-footer">
-      <p>Built with HTML, CSS, and JavaScript on open movie data endpoints.</p>
+      <p>
+        Built with HTML, CSS, and JavaScript on open movie data endpoints. TMDB data is used when an API key is
+        provided. This product uses the TMDB API but is not endorsed or certified by TMDB.
+      </p>
     </footer>
   </body>
 </html>

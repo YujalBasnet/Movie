@@ -1,3 +1,27 @@
+const DEFAULT_CONFIG = {
+  tmdbApiKey: "",
+  tmdbPages: 2,
+  tmdbLanguage: "en-US",
+  tmdbRegion: "",
+  enablePwa: true
+};
+
+const CONFIG = {
+  ...DEFAULT_CONFIG,
+  ...(window.CINEPULSE_CONFIG || {})
+};
+
+const TMDB_API_KEY = String(CONFIG.tmdbApiKey || "").trim();
+const TMDB_API_BASE = "https://api.themoviedb.org/3";
+const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780";
+const TMDB_LANGUAGE = CONFIG.tmdbLanguage || "en-US";
+const TMDB_REGION = CONFIG.tmdbRegion || "";
+const tmdbPagesValue = Number(CONFIG.tmdbPages);
+const TMDB_PAGES = Number.isFinite(tmdbPagesValue)
+  ? clamp(tmdbPagesValue, 1, 5)
+  : DEFAULT_CONFIG.tmdbPages;
+const TMDB_ENABLED = Boolean(TMDB_API_KEY);
+
 const DATASET_ENDPOINTS = [
   "data/movies.json",
   "https://cdn.jsdelivr.net/gh/erik-sytnyk/movies-list@master/db.json",
@@ -141,7 +165,9 @@ const state = {
   isLoading: false,
   requestSerial: 0,
   lastFilters: null,
-  tasteProfile: null
+  tasteProfile: null,
+  dataSource: "catalog",
+  dataSourceMessage: ""
 };
 
 const favorites = loadFavoritesMap();
@@ -186,6 +212,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 setupInfiniteScroll();
+registerServiceWorker();
 renderFavorites();
 initialize();
 
@@ -194,7 +221,7 @@ async function initialize() {
   if (personalizeStrengthInput && personalizeValue) {
     personalizeValue.textContent = String(Number(personalizeStrengthInput.value));
   }
-  showDataStatus("Loading open movie catalog...", "loading");
+  showDataStatus("Loading movie catalog...", "loading");
 
   const loadedMovies = await loadCatalogMovies();
 
@@ -213,17 +240,40 @@ async function initialize() {
     return;
   }
 
-  showDataStatus(`Loaded ${loadedMovies.length} movies. Ready to explore.`, "success");
+  const sourceLabel = state.dataSource || "catalog";
+  const prefix = state.dataSourceMessage ? `${state.dataSourceMessage} ` : "";
+  showDataStatus(`${prefix}Loaded ${loadedMovies.length} movies from ${sourceLabel}.`, "success");
   runFilterPipeline();
 }
 
 async function loadCatalogMovies() {
+  state.dataSourceMessage = "";
+
+  if (TMDB_ENABLED) {
+    try {
+      showDataStatus("Connecting to TMDB catalog...", "loading");
+      const tmdbCatalog = await loadTmdbCatalog();
+      if (tmdbCatalog.length > 0) {
+        state.dataSource = "TMDB";
+        return tmdbCatalog;
+      }
+      state.dataSourceMessage = "TMDB returned no results.";
+    } catch (error) {
+      state.dataSourceMessage = "TMDB unavailable.";
+    }
+  } else {
+    state.dataSourceMessage = "TMDB key not configured.";
+  }
+
+  showDataStatus("Loading open movie catalog...", "loading");
+
   for (const endpoint of DATASET_ENDPOINTS) {
     try {
       const payload = await fetchJsonWithTimeout(endpoint, 15000);
       const sourceMovies = Array.isArray(payload.movies) ? payload.movies : [];
       const normalized = normalizeMovies(sourceMovies);
       if (normalized.length > 0) {
+        state.dataSource = "Open dataset";
         return normalized;
       }
     } catch (error) {
@@ -231,6 +281,7 @@ async function loadCatalogMovies() {
     }
   }
 
+  state.dataSource = "Open dataset";
   return normalizeMovies(FALLBACK_MOVIES);
 }
 
@@ -254,12 +305,110 @@ async function fetchJsonWithTimeout(url, timeoutMs) {
   }
 }
 
+async function loadTmdbCatalog() {
+  const genreMap = await fetchTmdbGenres();
+  const catalog = new Map();
+
+  const categories = [
+    { label: "Popular", path: "/movie/popular" },
+    { label: "Top Rated", path: "/movie/top_rated" },
+    { label: "Now Playing", path: "/movie/now_playing" },
+    { label: "Upcoming", path: "/movie/upcoming" }
+  ];
+
+  for (const category of categories) {
+    for (let page = 1; page <= TMDB_PAGES; page += 1) {
+      try {
+        const payload = await fetchTmdbPage(category.path, page);
+        const results = Array.isArray(payload.results) ? payload.results : [];
+        results.forEach((entry) => {
+          const mapped = mapTmdbMovie(entry, genreMap, category.label);
+          if (mapped) {
+            catalog.set(mapped.id, mapped);
+          }
+        });
+      } catch (error) {
+        continue;
+      }
+    }
+  }
+
+  return normalizeMovies(Array.from(catalog.values()));
+}
+
+async function fetchTmdbPage(path, page) {
+  const params = new URLSearchParams({
+    api_key: TMDB_API_KEY,
+    language: TMDB_LANGUAGE,
+    page: String(page)
+  });
+
+  if (TMDB_REGION) {
+    params.set("region", TMDB_REGION);
+  }
+
+  const url = `${TMDB_API_BASE}${path}?${params.toString()}`;
+  return fetchJsonWithTimeout(url, 15000);
+}
+
+async function fetchTmdbGenres() {
+  const params = new URLSearchParams({
+    api_key: TMDB_API_KEY,
+    language: TMDB_LANGUAGE
+  });
+  const url = `${TMDB_API_BASE}/genre/movie/list?${params.toString()}`;
+  const payload = await fetchJsonWithTimeout(url, 15000);
+  const genres = Array.isArray(payload.genres) ? payload.genres : [];
+  const genreMap = new Map();
+  genres.forEach((genre) => {
+    if (genre && genre.id && genre.name) {
+      genreMap.set(genre.id, genre.name);
+    }
+  });
+  return genreMap;
+}
+
+function mapTmdbMovie(movie, genreMap, categoryLabel) {
+  if (!movie || !movie.title) {
+    return null;
+  }
+
+  const genres = Array.isArray(movie.genre_ids)
+    ? movie.genre_ids
+        .map((id) => genreMap.get(id))
+        .filter(Boolean)
+    : [];
+
+  const releaseDate = typeof movie.release_date === "string" ? movie.release_date : "";
+  const year = releaseDate ? Number(releaseDate.slice(0, 4)) : 0;
+  const posterUrl = movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : FALLBACK_POSTER;
+
+  return {
+    id: `tmdb-${movie.id}`,
+    title: movie.title,
+    year,
+    runtime: 0,
+    genres,
+    director: "Unknown",
+    actors: [],
+    plot: movie.overview || "No plot available.",
+    posterUrl,
+    voteAverage: parseNumeric(movie.vote_average),
+    popularity: parseNumeric(movie.popularity),
+    source: categoryLabel
+  };
+}
+
 function normalizeMovies(sourceMovies) {
   return sourceMovies
     .map((movie, index) => {
       const title = typeof movie.title === "string" ? movie.title.trim() : "";
       const year = parseNumeric(movie.year);
       const runtime = parseRuntime(movie.runtime);
+      const voteAverage = parseNumeric(
+        movie.voteAverage !== undefined && movie.voteAverage !== null ? movie.voteAverage : movie.vote_average
+      );
+      const popularity = parseNumeric(movie.popularity);
       const genres = Array.isArray(movie.genres)
         ? movie.genres.map((genre) => String(genre).trim()).filter(Boolean)
         : [];
@@ -288,7 +437,10 @@ function normalizeMovies(sourceMovies) {
         director: typeof movie.director === "string" ? movie.director.trim() : "Unknown",
         actors,
         plot: typeof movie.plot === "string" ? movie.plot.trim() : "No plot available.",
-        posterUrl: typeof movie.posterUrl === "string" && movie.posterUrl ? movie.posterUrl : FALLBACK_POSTER
+        posterUrl: typeof movie.posterUrl === "string" && movie.posterUrl ? movie.posterUrl : FALLBACK_POSTER,
+        voteAverage,
+        popularity,
+        source: movie.source ? String(movie.source) : ""
       };
     })
     .filter(Boolean);
@@ -621,6 +773,14 @@ function computeRecommendationScore(movie, filters) {
     score += clamp((movie.runtime - 70) / 6, 0, 14);
   }
 
+  if (movie.voteAverage) {
+    score += clamp(movie.voteAverage * 1.8, 0, 18);
+  }
+
+  if (movie.popularity) {
+    score += clamp(Math.log(movie.popularity + 1) * 3, 0, 14);
+  }
+
   if (filters.selectedGenres.length > 0) {
     const hitCount = filters.selectedGenres.filter((genre) => movie.genres.includes(genre)).length;
     score += hitCount * 12;
@@ -702,7 +862,7 @@ function buildTasteProfile() {
     }
 
     movie.genres.forEach((genre) => bumpPreference(profile.genres, genre, weight));
-    if (movie.director) {
+    if (movie.director && movie.director !== "Unknown") {
       bumpPreference(profile.directors, movie.director, weight);
     }
     movie.actors.forEach((actor) => bumpPreference(profile.actors, actor, weight));
@@ -974,6 +1134,18 @@ function buildRecommendationReason(movie, profile, personalScore, trendScore, fi
     }
   }
 
+  if (movie.voteAverage >= 7.8 && movie.popularity >= 60) {
+    return "Top rated hit";
+  }
+
+  if (movie.popularity >= 80) {
+    return "Popular right now";
+  }
+
+  if (movie.voteAverage >= 7.5) {
+    return "Critically liked";
+  }
+
   if (trendScore >= 45) {
     return "Trending in your sessions";
   }
@@ -1090,7 +1262,17 @@ function renderResults(movies, append) {
     card.querySelector(".movie-title").textContent = movie.title;
 
     const actorPreview = movie.actors.slice(0, 2).join(", ");
-    card.querySelector(".movie-meta").textContent = `${movie.director}${actorPreview ? ` | ${actorPreview}` : ""}`;
+    const metaParts = [];
+    if (movie.director && movie.director !== "Unknown") {
+      metaParts.push(movie.director);
+    }
+    if (actorPreview) {
+      metaParts.push(actorPreview);
+    }
+    if (!metaParts.length && movie.voteAverage) {
+      metaParts.push(`TMDB ${movie.voteAverage.toFixed(1)}`);
+    }
+    card.querySelector(".movie-meta").textContent = metaParts.join(" | ");
 
     const reasonTag = card.querySelector(".recommendation-reason");
     if (reasonTag) {
@@ -1307,6 +1489,22 @@ function updateHeroStats() {
 function setLoading(loading) {
   state.isLoading = loading;
   loadingState.hidden = !loading;
+}
+
+function registerServiceWorker() {
+  if (!CONFIG.enablePwa) {
+    return;
+  }
+
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {
+      return;
+    });
+  });
 }
 
 function setupInfiniteScroll() {

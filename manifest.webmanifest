@@ -1,0 +1,22 @@
+{
+  "name": "CinePulse X",
+  "short_name": "CinePulse",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0b1627",
+  "theme_color": "#0b1627",
+  "description": "CinePulse X is a cinematic movie discovery app with smart filters, favorites, and personalized recommendations.",
+  "icons": [
+    {
+      "src": "assets/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "assets/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
