@@ -38,30 +38,46 @@
       <span class="grain"></span>
     </div>
 
-    <header class="hero">
-      <div class="hero-copy-shell">
-        <p class="eyebrow">Advanced Movie Recommendation App</p>
-        <h1>Explore massive movie catalogs with smart filters</h1>
-        <p class="hero-copy">
-          Search, discover, and recommend movies with posters, trailers, multi-genre filtering, and a
-          fast multi-source catalog.
-        </p>
-        <div class="hero-badges" aria-label="Highlights">
-          <span class="hero-badge">Multi-source catalog</span>
-          <span class="hero-badge">Infinite scroll</span>
-          <span class="hero-badge">Favorites and ratings</span>
-          <span class="hero-badge">Trailer previews</span>
-        </div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">CinePulse</span>
+        <span class="brand-sub">Movie Recommendations</span>
       </div>
+      <nav class="topbar-nav" aria-label="Primary">
+        <button class="nav-link active" type="button">Home</button>
+        <button class="nav-link" type="button">Movies</button>
+        <button class="nav-link" type="button">My List</button>
+      </nav>
+      <div class="topbar-actions">
+        <label class="search-shell" for="search">
+          <span>Search</span>
+          <input
+            id="search"
+            name="search"
+            type="search"
+            maxlength="120"
+            placeholder="Search titles, genres, cast"
+          />
+        </label>
+        <button id="filters-toggle" class="btn btn-ghost" type="button">Filters</button>
+        <button id="surprise-btn" class="btn btn-primary" type="button">Surprise</button>
+      </div>
+    </header>
 
-      <aside class="hero-panel" aria-label="Live summary">
-        <div class="hero-panel-head">
-          <span class="hero-panel-eyebrow">Live cockpit</span>
-          <span class="hero-panel-status">Synced live</span>
+    <section class="hero-banner" aria-labelledby="hero-title">
+      <div class="hero-media">
+        <img id="hero-image" class="hero-image" src="" alt="" loading="lazy" />
+        <div class="hero-sheen"></div>
+      </div>
+      <div class="hero-content">
+        <p id="hero-mode-label" class="hero-kicker">For You</p>
+        <h1 id="hero-title">Loading picks...</h1>
+        <p id="hero-overview" class="hero-overview"></p>
+        <div id="hero-tags" class="hero-tags"></div>
+        <div class="hero-actions">
+          <button id="hero-trailer" class="btn btn-primary" type="button">Play trailer</button>
+          <button id="hero-save" class="btn btn-ghost" type="button">Add to list</button>
         </div>
-        <p class="hero-panel-title">
-          A movie browser designed for fast discovery, richer context, and a polished production feel.
-        </p>
         <div class="hero-stats">
           <div class="hero-stat">
             <strong id="hero-catalog-count">0</strong>
@@ -69,177 +85,213 @@
           </div>
           <div class="hero-stat">
             <strong id="hero-visible-count">0</strong>
-            <span>visible now</span>
+            <span>matches</span>
           </div>
           <div class="hero-stat">
             <strong id="hero-favorites-count">0</strong>
-            <span>favorites saved</span>
+            <span>in my list</span>
           </div>
         </div>
-        <p id="hero-mode-label" class="hero-panel-foot">Current feed: Discovery mode</p>
-      </aside>
-    </header>
+      </div>
+    </section>
 
-    <main class="app-layout">
-      <section class="panel controls-panel" aria-labelledby="controls-title">
-        <div class="panel-head">
-          <h2 id="controls-title">Discovery Controls</h2>
+    <section class="status-strip">
+      <p id="data-status" class="status-note">Loading movie catalog...</p>
+      <div id="active-query" class="active-query"></div>
+      <p id="result-count" class="panel-note"></p>
+    </section>
+
+    <main class="rows" id="rows">
+      <section class="row spotlight-row" id="spotlight-row" hidden>
+        <div class="row-head">
+          <h2 id="spotlight-title">Spotlight</h2>
+          <p id="spotlight-sub" class="row-sub"></p>
         </div>
-
-        <form id="discover-form" class="controls-grid" autocomplete="off">
-          <p id="data-status" class="status-note">Loading movie catalog...</p>
-
-          <div class="taste-card" aria-live="polite">
-            <div class="taste-row">
-              <span class="taste-label">Personal taste</span>
-              <span id="taste-strength" class="taste-strength">Just starting</span>
-            </div>
-            <p id="taste-summary" class="taste-summary">Rate and favorite movies to personalize your feed.</p>
-            <div id="taste-tags" class="taste-tags"></div>
-          </div>
-
-          <label class="field">
-            <span>Search Movies</span>
-            <input
-              id="search"
-              name="search"
-              type="text"
-              maxlength="120"
-              placeholder="Type title, plot keyword, cast phrase..."
-            />
-          </label>
-
-          <div class="mode-switch" role="group" aria-label="Feed mode">
-            <button type="button" class="mode-btn" data-mode="for-you">For You</button>
-            <button type="button" class="mode-btn active" data-mode="discover">Discover</button>
-            <button type="button" class="mode-btn" data-mode="newest">Newest</button>
-            <button type="button" class="mode-btn" data-mode="classics">Classics</button>
-            <button type="button" class="mode-btn" data-mode="long-watch">Long Watch</button>
-          </div>
-
-          <div class="field">
-            <span>Genres (Multi-Select)</span>
-            <details class="genre-picker" id="genre-picker">
-              <summary>Select one or more genres</summary>
-              <div id="genre-options" class="genre-options"></div>
-            </details>
-            <div id="selected-genres" class="selected-genres"></div>
-          </div>
-
-          <div class="advanced-grid">
-            <label class="field">
-              <span>Genre Match</span>
-              <select id="genre-match" name="genreMatch">
-                <option value="any">Match any selected genre</option>
-                <option value="all">Match all selected genres</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Sort By</span>
-              <select id="sort-by" name="sortBy">
-                <option value="recommendation">Best recommendation</option>
-                <option value="year_desc">Newest first</option>
-                <option value="year_asc">Oldest first</option>
-                <option value="runtime_desc">Longest runtime</option>
-                <option value="runtime_asc">Shortest runtime</option>
-                <option value="title_asc">Title A-Z</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Director Contains</span>
-              <input id="director-filter" name="directorFilter" type="text" maxlength="80" placeholder="e.g. nolan" />
-            </label>
-
-            <label class="field">
-              <span>Actor Contains</span>
-              <input id="actor-filter" name="actorFilter" type="text" maxlength="80" placeholder="e.g. dicaprio" />
-            </label>
-
-            <label class="field">
-              <span>Minimum Match: <strong id="min-match-value">35</strong>%</span>
-              <input id="min-match" name="minMatch" type="range" min="0" max="95" step="1" value="35" />
-            </label>
-
-            <label class="field">
-              <span>Personalization: <strong id="personalize-value">60</strong>%</span>
-              <input
-                id="personalize-strength"
-                name="personalizeStrength"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="60"
-              />
-            </label>
-
-            <label class="field">
-              <span>Year From</span>
-              <input id="year-from" name="yearFrom" type="number" min="1900" max="2035" placeholder="e.g. 2005" />
-            </label>
-
-            <label class="field">
-              <span>Year To</span>
-              <input id="year-to" name="yearTo" type="number" min="1900" max="2035" placeholder="e.g. 2026" />
-            </label>
-
-            <label class="field">
-              <span>Runtime Min (min)</span>
-              <input id="runtime-min" name="runtimeMin" type="number" min="0" max="300" placeholder="e.g. 90" />
-            </label>
-
-            <label class="field">
-              <span>Runtime Max (min)</span>
-              <input id="runtime-max" name="runtimeMax" type="number" min="0" max="400" placeholder="e.g. 180" />
-            </label>
-
-            <label class="field checkbox-field">
-              <span class="inline-check">
-                <input id="hide-seen" name="hideSeen" type="checkbox" />
-                Hide rated/saved titles
-              </span>
-            </label>
-          </div>
-
-          <div class="actions">
-            <button class="btn btn-primary" type="submit">Apply Filters</button>
-            <button class="btn btn-ghost" id="surprise-btn" type="button">Surprise Me</button>
-            <button class="btn btn-ghost" id="reset-btn" type="button">Reset</button>
-          </div>
-        </form>
+        <div id="spotlight-list" class="row-scroller" aria-live="polite"></div>
       </section>
 
-      <section class="panel results-panel" aria-labelledby="results-title">
-        <div class="panel-head results-head">
-          <h2 id="results-title">Movie Explorer</h2>
-          <p id="result-count" class="panel-note"></p>
+      <section class="row" aria-labelledby="row-for-you-title">
+        <div class="row-head">
+          <h2 id="row-for-you-title">For You</h2>
+          <p class="row-sub">Personalized picks tuned to your taste</p>
         </div>
+        <div id="row-for-you" class="row-scroller" aria-live="polite"></div>
+      </section>
 
-        <div id="active-query" class="active-query"></div>
+      <section class="row" aria-labelledby="row-trending-title">
+        <div class="row-head">
+          <h2 id="row-trending-title">Trending Now</h2>
+          <p class="row-sub">Hot titles moving fast</p>
+        </div>
+        <div id="row-trending" class="row-scroller" aria-live="polite"></div>
+      </section>
 
-        <p id="empty-state" class="empty-state">
-          Loading the movie catalog. Results will appear here shortly.
-        </p>
+      <section class="row" aria-labelledby="row-top-rated-title">
+        <div class="row-head">
+          <h2 id="row-top-rated-title">Top Rated</h2>
+          <p class="row-sub">Critically loved and fan approved</p>
+        </div>
+        <div id="row-top-rated" class="row-scroller" aria-live="polite"></div>
+      </section>
+
+      <section class="row" aria-labelledby="row-new-title">
+        <div class="row-head">
+          <h2 id="row-new-title">New Releases</h2>
+          <p class="row-sub">Fresh stories and recent hits</p>
+        </div>
+        <div id="row-new" class="row-scroller" aria-live="polite"></div>
+      </section>
+
+      <section class="row" aria-labelledby="row-because-title" id="row-because" hidden>
+        <div class="row-head">
+          <h2 id="row-because-title">Because you liked</h2>
+          <p id="row-because-sub" class="row-sub"></p>
+        </div>
+        <div id="row-because-list" class="row-scroller" aria-live="polite"></div>
+      </section>
+
+      <section class="row" id="search-row" hidden aria-labelledby="search-row-title">
+        <div class="row-head">
+          <h2 id="search-row-title">Search Results</h2>
+          <p class="row-sub">Matches for your query and filters</p>
+        </div>
+        <p id="empty-state" class="empty-state">Loading the movie catalog. Results will appear here shortly.</p>
         <p id="loading-state" class="loading-state" hidden>Fetching movies...</p>
-
-        <div id="results" class="movie-grid" aria-live="polite"></div>
-        <div id="scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
+        <div id="row-search" class="row-scroller" aria-live="polite"></div>
       </section>
 
-      <aside class="panel favorites-panel" aria-labelledby="favorites-title">
-        <div class="panel-head">
-          <h2 id="favorites-title">Favorites</h2>
+      <section class="row" id="favorites-row" aria-labelledby="favorites-title">
+        <div class="row-head">
+          <h2 id="favorites-title">My List</h2>
           <button id="clear-favorites" type="button" class="text-btn">Clear</button>
         </div>
         <p id="favorites-empty" class="empty-state">No favorites yet.</p>
-        <div id="favorites-list" class="favorites-list"></div>
-      </aside>
+        <div id="favorites-list" class="row-scroller" aria-live="polite"></div>
+      </section>
     </main>
 
+    <aside id="filters-panel" class="filters-panel" hidden aria-labelledby="controls-title">
+      <div class="filters-head">
+        <div>
+          <h2 id="controls-title">Filters</h2>
+          <p class="filters-sub">Tune your feed in seconds.</p>
+        </div>
+        <button id="filters-close" class="icon-btn" type="button" aria-label="Close filters">Close</button>
+      </div>
+
+      <form id="discover-form" class="filters-grid" autocomplete="off">
+        <div class="taste-card" aria-live="polite">
+          <div class="taste-row">
+            <span class="taste-label">Personal taste</span>
+            <span id="taste-strength" class="taste-strength">Just starting</span>
+          </div>
+          <p id="taste-summary" class="taste-summary">Rate and favorite movies to personalize your feed.</p>
+          <div id="taste-tags" class="taste-tags"></div>
+        </div>
+
+        <div class="mode-switch" role="group" aria-label="Feed mode">
+          <button type="button" class="mode-btn" data-mode="for-you">For You</button>
+          <button type="button" class="mode-btn active" data-mode="discover">Discover</button>
+          <button type="button" class="mode-btn" data-mode="newest">Newest</button>
+          <button type="button" class="mode-btn" data-mode="classics">Classics</button>
+          <button type="button" class="mode-btn" data-mode="long-watch">Long Watch</button>
+        </div>
+
+        <div class="field">
+          <span>Genres (Multi-Select)</span>
+          <details class="genre-picker" id="genre-picker">
+            <summary>Select one or more genres</summary>
+            <div id="genre-options" class="genre-options"></div>
+          </details>
+          <div id="selected-genres" class="selected-genres"></div>
+        </div>
+
+        <div class="advanced-grid">
+          <label class="field">
+            <span>Genre Match</span>
+            <select id="genre-match" name="genreMatch">
+              <option value="any">Match any selected genre</option>
+              <option value="all">Match all selected genres</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Sort By</span>
+            <select id="sort-by" name="sortBy">
+              <option value="recommendation">Best recommendation</option>
+              <option value="year_desc">Newest first</option>
+              <option value="year_asc">Oldest first</option>
+              <option value="runtime_desc">Longest runtime</option>
+              <option value="runtime_asc">Shortest runtime</option>
+              <option value="title_asc">Title A-Z</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Director Contains</span>
+            <input id="director-filter" name="directorFilter" type="text" maxlength="80" placeholder="e.g. nolan" />
+          </label>
+
+          <label class="field">
+            <span>Actor Contains</span>
+            <input id="actor-filter" name="actorFilter" type="text" maxlength="80" placeholder="e.g. dicaprio" />
+          </label>
+
+          <label class="field">
+            <span>Minimum Match: <strong id="min-match-value">35</strong>%</span>
+            <input id="min-match" name="minMatch" type="range" min="0" max="95" step="1" value="35" />
+          </label>
+
+          <label class="field">
+            <span>Personalization: <strong id="personalize-value">60</strong>%</span>
+            <input
+              id="personalize-strength"
+              name="personalizeStrength"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="60"
+            />
+          </label>
+
+          <label class="field">
+            <span>Year From</span>
+            <input id="year-from" name="yearFrom" type="number" min="1900" max="2035" placeholder="e.g. 2005" />
+          </label>
+
+          <label class="field">
+            <span>Year To</span>
+            <input id="year-to" name="yearTo" type="number" min="1900" max="2035" placeholder="e.g. 2026" />
+          </label>
+
+          <label class="field">
+            <span>Runtime Min (min)</span>
+            <input id="runtime-min" name="runtimeMin" type="number" min="0" max="300" placeholder="e.g. 90" />
+          </label>
+
+          <label class="field">
+            <span>Runtime Max (min)</span>
+            <input id="runtime-max" name="runtimeMax" type="number" min="0" max="400" placeholder="e.g. 180" />
+          </label>
+
+          <label class="field checkbox-field">
+            <span class="inline-check">
+              <input id="hide-seen" name="hideSeen" type="checkbox" />
+              Hide rated/saved titles
+            </span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Apply Filters</button>
+          <button class="btn btn-ghost" id="reset-btn" type="button">Reset</button>
+        </div>
+      </form>
+    </aside>
+
     <template id="movie-card-template">
-      <article class="movie-card">
+      <article class="movie-card compact">
         <div class="poster-wrap">
           <img class="poster" src="" alt="" loading="lazy" />
           <span class="movie-year"></span>
@@ -247,7 +299,10 @@
         </div>
 
         <div class="movie-body">
-          <h3 class="movie-title"></h3>
+          <div class="movie-title-row">
+            <h3 class="movie-title"></h3>
+            <span class="score-pill"></span>
+          </div>
           <p class="movie-meta"></p>
           <p class="recommendation-reason" hidden></p>
           <div class="genre-row"></div>
@@ -256,7 +311,6 @@
           <div class="user-rating" aria-label="Your rating"></div>
 
           <div class="card-actions">
-            <span class="score-pill"></span>
             <div class="card-buttons">
               <button class="btn btn-trailer" type="button">Trailer</button>
               <button class="btn btn-similar" type="button">Similar</button>
